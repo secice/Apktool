@@ -1,6 +1,6 @@
-/**
- *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
+/*
+ *  Copyright (C) 2010 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2010 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -339,13 +339,12 @@ public class AXmlResourceParser implements XmlResourceParser {
 
         // some attributes will return "", we must rely on the resource_id and refer to the frameworks
         // to match the resource id to the name. ex: 0x101021C = versionName
-        if (value.length() != 0) {
+        if (value.length() != 0 && !android_ns.equals(getAttributeNamespace(index))) {
             return value;
         } else {
             try {
                 value = mAttrDecoder.decodeManifestAttr(getAttributeNameResource(index));
             } catch (AndrolibException e) {
-                value = "";
             }
             return value;
         }
@@ -852,7 +851,7 @@ public class AXmlResourceParser implements XmlResourceParser {
     private final void doNext() throws IOException {
         // Delayed initialization.
         if (m_strings == null) {
-            m_reader.skipCheckInt(CHUNK_AXML_FILE);
+            m_reader.skipCheckInt(CHUNK_AXML_FILE, CHUNK_AXML_FILE_BROKEN);
 
 			/*
 			 * chunkSize
@@ -1004,7 +1003,7 @@ public class AXmlResourceParser implements XmlResourceParser {
             ATTRIBUTE_IX_VALUE_TYPE = 3, ATTRIBUTE_IX_VALUE_DATA = 4,
             ATTRIBUTE_LENGTH = 5;
 
-    private static final int CHUNK_AXML_FILE = 0x00080003,
+    private static final int CHUNK_AXML_FILE = 0x00080003, CHUNK_AXML_FILE_BROKEN = 0x00080001,
             CHUNK_RESOURCEIDS = 0x00080180, CHUNK_XML_FIRST = 0x00100100,
             CHUNK_XML_START_NAMESPACE = 0x00100100,
             CHUNK_XML_END_NAMESPACE = 0x00100101,

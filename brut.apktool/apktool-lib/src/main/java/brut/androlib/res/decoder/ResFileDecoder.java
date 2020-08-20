@@ -1,6 +1,6 @@
-/**
- *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
+/*
+ *  Copyright (C) 2010 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2010 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package brut.androlib.res.decoder;
 
 import brut.androlib.AndrolibException;
 import brut.androlib.err.CantFind9PatchChunk;
+import brut.androlib.err.RawXmlEncounteredException;
 import brut.androlib.res.data.ResResource;
 import brut.androlib.res.data.value.ResBoolValue;
 import brut.androlib.res.data.value.ResFileValue;
@@ -78,7 +79,7 @@ public class ResFileDecoder {
                     // check for raw 9patch images
                     for (String extension : RAW_9PATCH_IMAGE_EXTENSIONS) {
                         if (inFileName.toLowerCase().endsWith("." + extension)) {
-                            copyRaw(inDir, outDir, outFileName);
+                            copyRaw(inDir, outDir, inFileName, outFileName);
                             return;
                         }
                     }
@@ -106,7 +107,7 @@ public class ResFileDecoder {
                 // check for raw image
                 for (String extension : RAW_IMAGE_EXTENSIONS) {
                     if (inFileName.toLowerCase().endsWith("." + extension)) {
-                        copyRaw(inDir, outDir, outFileName);
+                        copyRaw(inDir, outDir, inFileName, outFileName);
                         return;
                     }
                 }
@@ -118,6 +119,11 @@ public class ResFileDecoder {
             }
 
             decode(inDir, inFileName, outDir, outFileName, "xml");
+        } catch (RawXmlEncounteredException ex) {
+            // If we got an error to decode XML, lets assume the file is in raw format.
+            // This is a large assumption, that might increase runtime, but will save us for situations where
+            // XSD files are AXML`d on aapt1, but left in plaintext in aapt2.
+            decode(inDir, inFileName, outDir, outFileName, "raw");
         } catch (AndrolibException ex) {
             LOGGER.log(Level.SEVERE, String.format(
                     "Could not decode file, replacing by FALSE value: %s",
@@ -138,9 +144,10 @@ public class ResFileDecoder {
         }
     }
 
-    public void copyRaw(Directory inDir, Directory outDir, String filename) throws AndrolibException {
+    public void copyRaw(Directory inDir, Directory outDir, String inFilename,
+                        String outFilename) throws AndrolibException {
         try {
-            DirUtil.copyToDir(inDir, outDir, filename);
+            DirUtil.copyToDir(inDir, outDir, inFilename, outFilename);
         } catch (DirectoryException ex) {
             throw new AndrolibException(ex);
         }
@@ -162,6 +169,7 @@ public class ResFileDecoder {
 
     private final static String[] RAW_IMAGE_EXTENSIONS = new String[] {
         "m4a", // apple
+        "qmg", // samsung
     };
 
     private final static String[] RAW_9PATCH_IMAGE_EXTENSIONS = new String[] {

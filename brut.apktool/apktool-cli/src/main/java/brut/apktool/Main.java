@@ -1,6 +1,6 @@
-/**
- *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
+/*
+ *  Copyright (C) 2010 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2010 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -36,6 +36,9 @@ import java.util.logging.*;
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException, BrutException {
 
+        // headless
+        System.setProperty("java.awt.headless", "true");
+
         // set verbosity default
         Verbosity verbosity = Verbosity.NORMAL;
 
@@ -51,6 +54,7 @@ public class Main {
         } catch (ParseException ex) {
             System.err.println(ex.getMessage());
             usage();
+            System.exit(1);
             return;
         }
 
@@ -108,6 +112,9 @@ public class Main {
         // check for options
         if (cli.hasOption("s") || cli.hasOption("no-src")) {
             decoder.setDecodeSources(ApkDecoder.DECODE_SOURCES_NONE);
+        }
+        if (cli.hasOption("only-main-classes")) {
+            decoder.setDecodeSources(ApkDecoder.DECODE_SOURCES_SMALI_ONLY_MAIN_CLASSES);
         }
         if (cli.hasOption("d") || cli.hasOption("debug")) {
             System.err.println("SmaliDebugging has been removed in 2.1.0 onward. Please see: https://github.com/iBotPeaches/Apktool/issues/1061");
@@ -213,16 +220,23 @@ public class Main {
             apkOptions.aaptPath = cli.getOptionValue("a");
         }
         if (cli.hasOption("c") || cli.hasOption("copy-original")) {
+            System.err.println("-c/--copy-original has been deprecated. Removal planned for v2.5.0 (#2129)");
             apkOptions.copyOriginalFiles = true;
         }
         if (cli.hasOption("p") || cli.hasOption("frame-path")) {
             apkOptions.frameworkFolderLocation = cli.getOptionValue("p");
+        }
+        if (cli.hasOption("nc") || cli.hasOption("no-crunch")) {
+            apkOptions.noCrunch = true;
         }
 
         // Temporary flag to enable the use of aapt2. This will tranform in time to a use-aapt1 flag, which will be
         // legacy and eventually removed.
         if (cli.hasOption("use-aapt2")) {
             apkOptions.useAapt2 = true;
+        }
+        if (cli.hasOption("api") || cli.hasOption("api-level")) {
+            apkOptions.forceApi = Integer.parseInt(cli.getOptionValue("api"));
         }
         if (cli.hasOption("o") || cli.hasOption("output")) {
             outFile = new File(cli.getOptionValue("o"));
@@ -297,6 +311,11 @@ public class Main {
         Option noSrcOption = Option.builder("s")
                 .longOpt("no-src")
                 .desc("Do not decode sources.")
+                .build();
+
+        Option onlyMainClassesOption = Option.builder()
+                .longOpt("only-main-classes")
+                .desc("Only disassemble the main dex classes (classes[0-9]*.dex) in the root.")
                 .build();
 
         Option noResOption = Option.builder("r")
@@ -397,6 +416,11 @@ public class Main {
                 .desc("Copies original AndroidManifest.xml and META-INF. See project page for more info.")
                 .build();
 
+        Option noCrunchOption = Option.builder("nc")
+                .longOpt("no-crunch")
+                .desc("Disable crunching of resource files during the build step.")
+                .build();
+
         Option tagOption = Option.builder("t")
                 .longOpt("tag")
                 .desc("Tag frameworks using <tag>.")
@@ -431,14 +455,17 @@ public class Main {
             DecodeOptions.addOption(noDbgOption);
             DecodeOptions.addOption(keepResOption);
             DecodeOptions.addOption(analysisOption);
+            DecodeOptions.addOption(onlyMainClassesOption);
             DecodeOptions.addOption(apiLevelOption);
             DecodeOptions.addOption(noAssetOption);
             DecodeOptions.addOption(forceManOption);
 
+            BuildOptions.addOption(apiLevelOption);
             BuildOptions.addOption(debugBuiOption);
             BuildOptions.addOption(aaptOption);
             BuildOptions.addOption(originalOption);
             BuildOptions.addOption(aapt2Option);
+            BuildOptions.addOption(noCrunchOption);
         }
 
         // add global options
@@ -492,6 +519,8 @@ public class Main {
         allOptions.addOption(verboseOption);
         allOptions.addOption(quietOption);
         allOptions.addOption(aapt2Option);
+        allOptions.addOption(noCrunchOption);
+        allOptions.addOption(onlyMainClassesOption);
     }
 
     private static String verbosityHelp() {

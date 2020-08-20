@@ -1,6 +1,6 @@
-/**
- *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
+/*
+ *  Copyright (C) 2010 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2010 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -38,6 +38,10 @@ public class Res9patchStreamDecoder implements ResStreamDecoder {
         try {
             byte[] data = IOUtils.toByteArray(in);
 
+            if (data.length == 0) {
+                return;
+            }
+
             BufferedImage im = ImageIO.read(new ByteArrayInputStream(data));
             int w = im.getWidth(), h = im.getHeight();
 
@@ -65,13 +69,21 @@ public class Res9patchStreamDecoder implements ResStreamDecoder {
             drawVLine(im2, w + 1, np.padTop + 1, h - np.padBottom);
 
             int[] xDivs = np.xDivs;
-            for (int i = 0; i < xDivs.length; i += 2) {
-                drawHLine(im2, 0, xDivs[i] + 1, xDivs[i + 1]);
+            if (xDivs.length == 0) {
+                drawHLine(im2, 0, 1, w);
+            } else {
+                for (int i = 0; i < xDivs.length; i += 2) {
+                    drawHLine(im2, 0, xDivs[i] + 1, xDivs[i + 1]);
+                }
             }
 
             int[] yDivs = np.yDivs;
-            for (int i = 0; i < yDivs.length; i += 2) {
-                drawVLine(im2, 0, yDivs[i] + 1, yDivs[i + 1]);
+            if (yDivs.length == 0) {
+                drawVLine(im2, 0, 1, h);
+            } else {
+                for (int i = 0; i < yDivs.length; i += 2) {
+                    drawVLine(im2, 0, yDivs[i] + 1, yDivs[i + 1]);
+                }
             }
 
             // Some images additionally use Optical Bounds

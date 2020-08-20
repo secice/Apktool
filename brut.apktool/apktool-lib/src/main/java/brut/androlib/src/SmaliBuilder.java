@@ -1,6 +1,6 @@
-/**
- *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
+/*
+ *  Copyright (C) 2010 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2010 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class SmaliBuilder {
 
         if (fileName.endsWith(".smali")) {
             try {
-                if (!SmaliMod.assembleSmaliFile(inFile, dexBuilder, false, false)) {
+                if (!SmaliMod.assembleSmaliFile(inFile, dexBuilder, mApiLevel, false, false)) {
                     throw new AndrolibException("Could not smali file: " + fileName);
                 }
             } catch (IOException | RecognitionException ex) {

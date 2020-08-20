@@ -1,6 +1,6 @@
-/**
- *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
+/*
+ *  Copyright (C) 2010 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2010 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class ResResSpec {
         if (resResSpec != null) {
             cleanName = name + "_APKTOOL_DUPLICATENAME_" + id.toString();
         } else {
-            cleanName = (name.isEmpty() ? ("APKTOOL_DUMMYVAL_" + id.toString()) : name);
+            cleanName = ((name == null || name.isEmpty()) ? ("APKTOOL_DUMMYVAL_" + id.toString()) : name);
         }
         
         this.mName = cleanName;

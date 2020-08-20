@@ -1,6 +1,6 @@
-/**
- *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
+/*
+ *  Copyright (C) 2010 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2010 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -42,11 +42,11 @@ public class ExtDataInput extends DataInputDelegate {
         skipBytes(4);
     }
 
-    public void skipCheckInt(int expected) throws IOException {
+    public void skipCheckInt(int expected1, int expected2) throws IOException {
         int got = readInt();
-        if (got != expected) {
+        if (got != expected1 && got != expected2) {
             throw new IOException(String.format(
-                "Expected: 0x%08x, got: 0x%08x", expected, got));
+                "Expected: 0x%08x or 0x%08x, got: 0x%08x", expected1, expected2, got));
         }
     }
 
